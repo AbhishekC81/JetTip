@@ -3,6 +3,7 @@ package com.example.jettip
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -49,7 +50,8 @@ fun MyApp(content: @Composable () -> Unit) {
     }
 }
 
-@Preview(showBackground = false)
+
+//@Preview(showBackground = false)
 @Composable
 fun TopHeader(totalPerPerson: Double = 0.0) {
     Surface(
@@ -75,6 +77,23 @@ fun TopHeader(totalPerPerson: Double = 0.0) {
                 style = MaterialTheme.typography.headlineMedium,
                 fontWeight = FontWeight.ExtraBold
             )
+
+        }
+    }
+}
+
+
+@Preview
+@Composable
+fun MainContent() {
+    Surface(
+        modifier = Modifier
+            .padding(2.dp)
+            .fillMaxWidth(),
+        shape = RoundedCornerShape(8.dp),
+        border = BorderStroke(width = 1.dp, color = Color.Black)
+    ) {
+        Column {
 
         }
     }
