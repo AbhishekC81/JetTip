@@ -3,7 +3,6 @@
 package com.example.jettip
 
 import android.os.Bundle
-import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.BorderStroke
@@ -11,13 +10,10 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.material.icons.Icons
@@ -28,6 +24,7 @@ import androidx.compose.material3.Slider
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -36,7 +33,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -109,17 +105,36 @@ fun TopHeader(totalPerPerson: Double = 0.0) {
 @Composable
 fun MainContent() {
 
+    val splitByState = remember {
+        mutableStateOf(1)
+    }
+    val range = IntRange(start = 1, endInclusive = 100)
+    val tipAmountState = remember {
+        mutableStateOf(0.0)
+    }
+    val totalPerPersonState = remember {
+        mutableStateOf(0.0)
+    }
+
     Column {
-        BillForm() { billAmt ->
-            Log.d("AMT", "MainContent: $billAmt")
-        }
+        BillForm(
+            splitByState = splitByState,
+            range = range,
+            tipAmountState = tipAmountState,
+            totalPerPersonState = totalPerPersonState
+        ) {}
     }
 }
 
 
 @Composable
-fun BillForm(modifier: Modifier = Modifier,
-             onValChange: (String) -> Unit = {}
+fun BillForm(
+    modifier: Modifier = Modifier,
+    range: IntRange = 1..100,
+    splitByState: MutableState<Int>,
+    tipAmountState: MutableState<Double>,
+    totalPerPersonState: MutableState<Double>,
+    onValChange: (String) -> Unit = {}
 ) {
     val totalBillState = remember {
         mutableStateOf("")
@@ -132,16 +147,7 @@ fun BillForm(modifier: Modifier = Modifier,
         mutableStateOf(0f)
     }
     val tipPercentage = (sliderPositionState.value * 100).toInt()
-    val splitByState = remember {
-        mutableStateOf(1)
-    }
-    val range = IntRange(start = 1, endInclusive = 100)
-    val tipAmountState = remember {
-        mutableStateOf(0.0)
-    }
-    val totalPerPersonState = remember {
-        mutableStateOf(0.0)
-    }
+
 
     TopHeader(totalPerPerson = totalPerPersonState.value)
 
@@ -197,7 +203,7 @@ fun BillForm(modifier: Modifier = Modifier,
                         horizontalArrangement = Arrangement.End
                     ) {
                         RoundIconButton(
-                            imageVector = Icons.Default.Remove ,
+                            imageVector = Icons.Default.Remove,
                             onClick = {
                                 splitByState.value =
                                     if (splitByState.value > 1) splitByState.value - 1 else 1
@@ -218,7 +224,7 @@ fun BillForm(modifier: Modifier = Modifier,
                         )
 
                         RoundIconButton(
-                            imageVector = Icons.Default.Add ,
+                            imageVector = Icons.Default.Add,
                             onClick = {
                                 if (splitByState.value < range.last) {
                                     splitByState.value += 1
@@ -236,55 +242,60 @@ fun BillForm(modifier: Modifier = Modifier,
 
                 }
 
-            //Tip Row
-            Row(
-                modifier = Modifier.padding(horizontal = 3.dp,
-                    vertical = 12.dp)
-            ) {
-                Text(text = "Tip",
-                    modifier = Modifier.align(Alignment.CenterVertically)
-                )
-                Spacer(modifier = Modifier.width(200.dp))
+                //Tip Row
+                Row(
+                    modifier = Modifier.padding(
+                        horizontal = 3.dp,
+                        vertical = 12.dp
+                    )
+                ) {
+                    Text(
+                        text = "Tip",
+                        modifier = Modifier.align(Alignment.CenterVertically)
+                    )
+                    Spacer(modifier = Modifier.width(200.dp))
 
-                Text(text = "$ ${tipAmountState.value}",
-                    modifier = Modifier.align(Alignment.CenterVertically))
-            }
+                    Text(
+                        text = "$ ${tipAmountState.value}",
+                        modifier = Modifier.align(Alignment.CenterVertically)
+                    )
+                }
 
-            //Tip Slider
-            Column(
-                verticalArrangement = Arrangement.Center,
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Text(text = "$tipPercentage %")
+                //Tip Slider
+                Column(
+                    verticalArrangement = Arrangement.Center,
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(text = "$tipPercentage %")
 
-                Spacer(modifier = Modifier.height(14.dp))
+                    Spacer(modifier = Modifier.height(14.dp))
 
-                Slider(
-                    value = sliderPositionState.value,
-                    onValueChange = { newVal ->
-                        sliderPositionState.value = newVal
-                        tipAmountState.value = calculateTotalTip(
-                            totalBill = totalBillState.value.toDouble(),
-                            tipPercentage = tipPercentage
-                        )
+                    Slider(
+                        value = sliderPositionState.value,
+                        onValueChange = { newVal ->
+                            sliderPositionState.value = newVal
+                            tipAmountState.value = calculateTotalTip(
+                                totalBill = totalBillState.value.toDouble(),
+                                tipPercentage = tipPercentage
+                            )
 
-                        totalPerPersonState.value = calculatePerPerson(
-                            totalBill = totalBillState.value.toDouble(),
-                            tipPercentage = tipPercentage,
-                            splitBy = splitByState.value
-                        )
-                    },
-                    modifier = Modifier
-                        .padding(start = 16.dp,
-                            end = 16.dp)
-                )
-            }
+                            totalPerPersonState.value = calculatePerPerson(
+                                totalBill = totalBillState.value.toDouble(),
+                                tipPercentage = tipPercentage,
+                                splitBy = splitByState.value
+                            )
+                        },
+                        modifier = Modifier
+                            .padding(
+                                start = 16.dp,
+                                end = 16.dp
+                            )
+                    )
+                }
             }
         }
     }
 }
-
-
 
 
 @Preview(showBackground = true)
