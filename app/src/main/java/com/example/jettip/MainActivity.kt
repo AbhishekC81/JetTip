@@ -24,6 +24,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Slider
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -75,6 +76,7 @@ fun TopHeader(totalPerPerson: Double = 0.0) {
     Surface(
         modifier = Modifier
             .fillMaxWidth()
+            .padding(15.dp)
             .height(150.dp)
             .clip(shape = RoundedCornerShape(12.dp)),
         color = Color(0xFFD6AFF5)
@@ -104,8 +106,11 @@ fun TopHeader(totalPerPerson: Double = 0.0) {
 @Preview
 @Composable
 fun MainContent() {
-    BillForm() {billAmt ->
-        Log.d("AMT", "MainContent: $billAmt")
+
+    Column {
+        BillForm() { billAmt ->
+            Log.d("AMT", "MainContent: $billAmt")
+        }
     }
 }
 
@@ -121,6 +126,11 @@ fun BillForm(modifier: Modifier = Modifier,
         totalBillState.value.trim().isNotEmpty()
     }
     val keyboardController = LocalSoftwareKeyboardController.current
+    val sliderPositionState = remember {
+        mutableStateOf(0f)
+    }
+
+    TopHeader()
 
     Surface(
         modifier = Modifier
@@ -148,7 +158,7 @@ fun BillForm(modifier: Modifier = Modifier,
                 }
             )
 
-            if (validState) {
+            //if (validState) {
                 Row(
                     modifier = Modifier
                         .padding(3.dp),
@@ -186,7 +196,42 @@ fun BillForm(modifier: Modifier = Modifier,
                     }
 
                 }
+
+            //Tip Row
+            Row(
+                modifier = Modifier.padding(horizontal = 3.dp,
+                    vertical = 12.dp)
+            ) {
+                Text(text = "Tip",
+                    modifier = Modifier.align(Alignment.CenterVertically)
+                )
+                Spacer(modifier = Modifier.width(200.dp))
+
+                Text(text = "$33.00",
+                    modifier = Modifier.align(Alignment.CenterVertically))
             }
+
+            //Tip Slider
+            Column(
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text(text = "33%")
+
+                Spacer(modifier = Modifier.height(14.dp))
+
+                Slider(
+                    value = sliderPositionState.value,
+                    onValueChange = { newVal ->
+                        sliderPositionState.value = newVal
+                    },
+                    modifier = Modifier
+                        .padding(start = 16.dp,
+                            end = 16.dp),
+                    steps = 5
+                )
+            }
+            //}
         }
     }
 }
